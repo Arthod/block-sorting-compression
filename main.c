@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include <libsais64.h>
 
 #define BLOCK_SIZE_MAX 500000000
                     // 2147483647
