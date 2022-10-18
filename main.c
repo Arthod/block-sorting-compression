@@ -1,12 +1,25 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include "compress.c"
 
-#define BLOCK_SIZE_MAX 500000000
+#define BLOCK_SIZE_MAX 600000000//2000000000//500000000 * 4
                     // 2147483647
 
 #define min(a,b) (((a)<(b))?(a):(b))
 #define max(a,b) (((a)>(b))?(a):(b))
+
+
+int runs_count(char *arr, int arr_length) {
+    int count = 0;
+    for (int i = 1; i < arr_length; i++) {
+        if (arr[i] != arr[i - 1]) {
+            count++;
+        }
+    }
+    
+    return count;
+}
 
 
 int main(int argc, char** argv) {
@@ -31,12 +44,15 @@ int main(int argc, char** argv) {
         fgets(buffer, block_size + 1, f);
         printf("Compressing block %d of %d with block_size=%d\n", i + 1, blocks_count, block_size);
 
-        // 
+        int64_t bwt_primary_index = bwt_transform(buffer, block_size);
+        printf("Run length %d\n", runs_count(buffer, block_size));
 
-        // print output for debug
-        //for (int j = 0; j < block_size; j++) {
-        //    printf("%c", buffer[j]);
-        //}
+        // Write transformed to out
+        FILE *f_out = fopen("out.txt", "w");
+        for (int j = 0; j < block_size; j++) {
+            fprintf(f_out, "%c", buffer[j]);
+        }
+        fclose(f_out);
     }
 
     fclose(f);
