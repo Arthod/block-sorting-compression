@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
         runs = runs_count(block, block_size);
         printf("Runs count after %d with average run length %f\n", runs, block_size / (float) runs);
 
-        bwt_reverse_transform(block, block_size, bwt_primary_index);
+        bwt_reverse_transform_(block, block_size, bwt_primary_index);
         runs = runs_count(block, block_size);
         printf("Runs count after %d with average run length %f\n", runs, block_size / (float) runs);
 
