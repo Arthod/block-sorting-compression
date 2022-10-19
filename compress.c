@@ -181,6 +181,7 @@ int64_t bwt_transform(uint8_t *block, int32_t block_size) {
             printf("Error test 2\n");
         }
     }
+    free(block_temp);
 
     // Now our assumption is that V is sorted correctly.
     // From the suffix array we can form bwt(s)
