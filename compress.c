@@ -1,8 +1,61 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "libsais64.h"
+#include <time.h>
 
 #define UNUSED_BYTE -1
+
+void swap(uint64_t *arr, uint64_t idx1, uint64_t idx2) {
+    uint64_t temp = arr[idx1];
+    arr[idx1] = arr[idx2];
+    arr[idx2] = temp;
+}
+uint64_t partition(uint64_t *index_array, uint8_t *compared_array, uint64_t start_index, uint64_t end_index) {
+    uint64_t pivot = index_array[end_index];
+    uint64_t i = start_index - 1;
+
+    for (uint64_t j = start_index; j < end_index; j++) {
+        // TODO: can optimize.. We know first two characters of the word are already sorted, no need to recheck them
+        uint64_t k = 0;
+
+        while (1) {
+            if (compared_array[index_array[j] + k] != compared_array[pivot + k]) {
+                // If they are not equal, check comparison, and swap if greater than pivot
+                if (compared_array[index_array[j] + k] <= compared_array[pivot + k]) {
+                    i++;
+                    swap(index_array, i, j);
+                }
+                break;
+            }
+            k++;
+        }
+    }
+
+    swap(index_array, i + 1, end_index);
+    return i + 1;
+}
+
+uint64_t randomized_partition(uint64_t *index_array, uint8_t *compared_array, uint64_t start_index, uint64_t end_index) {
+    uint64_t random_index = (rand() % (end_index - start_index + 1)) + start_index;
+    if (random_index > end_index || random_index < start_index) {
+        printf("Randomized partition error\n");
+    }
+    swap(index_array, end_index, random_index);
+    return partition(index_array, compared_array, start_index, end_index);
+}
+void randomized_quicksort_index_array(uint64_t *index_array, uint8_t *compared_array, uint64_t start_index, uint64_t end_index) {
+    // In-place implementation of quicksort that sorts an index 
+    // array based on the comparable values of a comparable array
+    if (start_index >= end_index) {
+        return;
+    }
+    
+    int q = randomized_partition(index_array, compared_array, start_index, end_index);
+    randomized_quicksort_index_array(index_array, compared_array, start_index, q - 1);
+    randomized_quicksort_index_array(index_array, compared_array, q + 1, end_index);
+}
+
+
 
 int64_t bwt_transform_(uint8_t *block, int32_t block_size) {
     int32_t fs = 0;
@@ -24,6 +77,7 @@ int32_t bwt_reverse_transform_(uint8_t *block, int32_t block_size, int64_t prima
     return err;
 }
 int64_t bwt_transform(uint8_t *block, int32_t block_size) {
+    srand(time(NULL));
     /// Compute the BWT using radix sort on the first two characters, then
     /// quicksort on the rest. Burrows-Wheeler method for computation of SA.
 
@@ -56,6 +110,7 @@ int64_t bwt_transform(uint8_t *block, int32_t block_size) {
         V_temp[count_current[k] - 1] = i;
         count_current[k]--;
     }
+    free(count_current);
 
     // Sort by first character
     count[0]--;
@@ -70,6 +125,8 @@ int64_t bwt_transform(uint8_t *block, int32_t block_size) {
         V[count[k] - 1] = V_temp[i];
         count[k]--;
     }
+    free(count);
+    free(V_temp);
 
     /*
     // Test V array is sorted by first two characters
@@ -109,16 +166,43 @@ int64_t bwt_transform(uint8_t *block, int32_t block_size) {
             }
         }
     }
-}
 
-void randomized_quicksort_index_array(uint64_t *index_array, uint8_t *compared_array, int start_index, int end_index) {
-    // In-place implementation of quicksort that sorts an index 
-    // array based on the comparable values of a comparable array
-    if (start_index >= end_index) {
-        return;
+
+    // Test V array is sorted
+    for (uint64_t i = 0; i < block_size - 2; i++) {
+        uint64_t c = V[i];
+        uint64_t l = V[i + 1];
+
+        while (block_temp[c] == block_temp[l]) {
+            c++;
+            l++;
+        }
+        if (block_temp[c] > block_temp[l]) {
+            printf("Error test 2\n");
+        }
     }
+
+    // Now our assumption is that V is sorted correctly.
+    // From the suffix array we can form bwt(s)
+    uint64_t primary_index = 0;
+    uint8_t *out_arr = malloc(block_size * sizeof(uint8_t));
+    int zero_seen = 1;
+    for (uint64_t i = 0; i < block_size; i++) {
+        if (V[i] == 0) {
+            primary_index = i + 1;
+            zero_seen = 0;
+        } else {
+            out_arr[i + zero_seen] = block[V[i] - 1];
+        }
+    }
+    out_arr[0] = block[block_size - 1];
     
-    int q = randomized_partition(index_array, compared_array, start_index, end_index);
-    randomized_quicksort_index_array(index_array, compared_array, start_index, q - 1);
-    randomized_quicksort_index_array(index_array, compared_array, q + 1, end_index);
+    for (uint64_t i = 0; i < block_size; i++) {
+        block[i] = out_arr[i];
+    }
+
+    free(out_arr);
+    free(V);
+
+    return primary_index;
 }

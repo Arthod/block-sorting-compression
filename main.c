@@ -56,16 +56,16 @@ int main(int argc, char** argv) {
         runs = runs_count(block, block_size);
         printf("Runs count after %d with average run length %f\n", runs, block_size / (float) runs);
 
-        bwt_reverse_transform_(block, block_size, bwt_primary_index);
-        runs = runs_count(block, block_size);
-        printf("Runs count after %d with average run length %f\n", runs, block_size / (float) runs);
-
         // Write transformed to out
         FILE *f_out = fopen("out.txt", "w");
         for (int j = 0; j < block_size; j++) {
             fprintf(f_out, "%c", block[j]);
         }
         fclose(f_out);
+
+        bwt_reverse_transform_(block, block_size, bwt_primary_index);
+        runs = runs_count(block, block_size);
+        printf("Runs count after %d with average run length %f\n", runs, block_size / (float) runs);
 
         free(block);
     }
