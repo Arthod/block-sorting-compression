@@ -20,52 +20,65 @@ int runs_count(char *arr, int arr_length) {
     return count;
 }
 
+int file_size(FILE *f) {
+    fseek(f, 0, SEEK_END);
+    int f_size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    
+    return f_size;
+}
 
 int main(int argc, char** argv) {
     if (argc < 2) {
         printf("include file to compress as secondary argument\n");
+        return -1;
     }
 
-    FILE *f = fopen(argv[1], "r");
-
     // Get file size
-    fseek(f, 0, SEEK_END);
-    float f_size = ftell(f);
-    fseek(f, 0, SEEK_SET);
+    FILE *f = fopen(argv[1], "r");
+    int f_size = file_size(f);
 
     // Compress for each block size separatly
-    int blocks_count = ceil(f_size / BLOCK_SIZE_MAX);
+    int blocks_count = ceil((float) f_size / BLOCK_SIZE_MAX);
+    printf("File size: %d, maximum block size: %d, number of blocks: %d\n", f_size, BLOCK_SIZE_MAX, blocks_count);
     for (int i = 0; i < blocks_count; i++) {
         int block_size = min(BLOCK_SIZE_MAX, f_size - BLOCK_SIZE_MAX * i);
         uint8_t *block = malloc(block_size * sizeof(uint8_t));
+        uint8_t *block_saved = malloc(block_size * sizeof(uint8_t));
+        uint32_t runs;
 
+        printf("Compressing block %d of %d with block_size: %d\n", i + 1, blocks_count, block_size);
+
+        // Read file upto block size
         for (int j = 0; j < block_size; j++) {
             block[j] = fgetc(f);
+            block_saved[j] = block[j];
         }
-        //fgets(block, block_size + 1, f);
-        /*for (int j = 0; j < block_size; j++) {
-            printf("%c", block[j]);
-        }*/
 
-        int runs = runs_count(block, block_size);
+        // Compute and print total number of runs before BWT
+        runs = runs_count(block, block_size);
         printf("Runs count before %d with average run length %f\n", runs, block_size / (float) runs);
-
-        printf("Compressing block %d of %d with block_size=%d\n", i + 1, blocks_count, block_size);
         
-        int64_t bwt_primary_index = bwt_transform(block, block_size);
+        // Compute and print total number of runs after BWT
+        int64_t bwt_primary_index = bwt_transform_optimal(block, block_size);
         runs = runs_count(block, block_size);
         printf("Runs count after %d with average run length %f\n", runs, block_size / (float) runs);
 
-        // Write transformed to out
+        // Write BWT of string to out file and close file
         FILE *f_out = fopen("out.txt", "w");
         for (int j = 0; j < block_size; j++) {
             fprintf(f_out, "%c", block[j]);
         }
         fclose(f_out);
 
-        bwt_reverse_transform_(block, block_size, bwt_primary_index);
-        runs = runs_count(block, block_size);
-        printf("Runs count after %d with average run length %f\n", runs, block_size / (float) runs);
+        // Reverse BWT and verify it is the same as input file
+        bwt_reverse_transform_optimal(block, block_size, bwt_primary_index);
+        for (int j = 0; j < block_size; j++) {
+            if (block_saved[j] != block[j]) {
+                printf("Error occured. BWT reverse and BWT input is not the same\n");
+                return -1;
+            }
+        }
 
         free(block);
     }
