@@ -35,10 +35,16 @@ int main(int argc, char** argv) {
     }
 
     // Write alphabet
-    uint8_t *alphabet = malloc(256 * sizeof(uint8_t));
-    for (int i = 0; i < 256; i++) {
-        alphabet[i] = 255 - i;
-    }
+    uint8_t *alphabet = malloc(256 * sizeof(uint8_t));;
+    int idx = 0;
+    for (int i = 96; i < 128; i++) alphabet[idx++] = i;
+    for (int i = 64; i < 96; i++) alphabet[idx++] = i;
+    for (int i = 32; i < 64; i++) alphabet[idx++] = i;
+    for (int i = 0; i < 32; i++) alphabet[idx++] = i;
+    for (int i = 128; i < 256; i++) alphabet[idx++] = i;
+
+    
+    for (int i = 0; i < 256; i++) alphabet[i] = i;
 
     // Get file size
     FILE *f = fopen(argv[1], "r");
@@ -85,8 +91,9 @@ int main(int argc, char** argv) {
                 return -1;
             }
         }
-        
+
         free(block);
+        free(block_saved);
     }
 
     free(alphabet);
