@@ -34,6 +34,12 @@ int main(int argc, char** argv) {
         return -1;
     }
 
+    // Write alphabet
+    uint8_t *alphabet = malloc(256 * sizeof(uint8_t));
+    for (int i = 0; i < 256; i++) {
+        alphabet[i] = 255 - i;
+    }
+
     // Get file size
     FILE *f = fopen(argv[1], "r");
     int f_size = file_size(f);
@@ -60,7 +66,7 @@ int main(int argc, char** argv) {
         printf("Runs count before %d with average run length %f\n", runs, block_size / (float) runs);
         
         // Compute and print total number of runs after BWT
-        int64_t bwt_primary_index = bwt_transform_optimal(block, block_size);
+        int64_t bwt_primary_index = bwt_transform(block, block_size, alphabet);
         runs = runs_count(block, block_size);
         printf("Runs count after %d with average run length %f\n", runs, block_size / (float) runs);
 
@@ -72,17 +78,18 @@ int main(int argc, char** argv) {
         fclose(f_out);
 
         // Reverse BWT and verify it is the same as input file
-        bwt_reverse_transform_optimal(block, block_size, bwt_primary_index);
+        bwt_reverse_transform(block, block_size, bwt_primary_index, alphabet);
         for (int j = 0; j < block_size; j++) {
             if (block_saved[j] != block[j]) {
                 printf("Error occured. BWT reverse and BWT input is not the same\n");
                 return -1;
             }
         }
-
+        
         free(block);
     }
 
+    free(alphabet);
     fclose(f);
 
     return 0;

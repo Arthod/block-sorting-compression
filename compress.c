@@ -4,6 +4,7 @@
 #include <time.h>
 
 #define UNUSED_BYTE -1
+#define ALPHABET_SIZE 256
 
 void swap(uint64_t *arr, uint64_t idx1, uint64_t idx2) {
     uint64_t temp = arr[idx1];
@@ -57,7 +58,14 @@ void randomized_quicksort_index_array(uint64_t *index_array, uint8_t *compared_a
 
 
 
-int64_t bwt_transform_optimal(uint8_t *block, int32_t block_size) {
+int64_t bwt_transform(uint8_t *block, int32_t block_size, uint8_t *alphabet) {
+    // Apply alphabet if not NULL
+    if (alphabet != NULL) {
+        for (int i = 0; i < block_size; i++) {
+            block[i] = alphabet[block[i]];
+        }
+    }
+
     int32_t fs = 0;
     int64_t *temp = malloc((block_size - 1 + fs) * sizeof(int64_t));
     int64_t primary_index = libsais64_bwt(block, block, temp, block_size, fs, NULL);
@@ -67,16 +75,29 @@ int64_t bwt_transform_optimal(uint8_t *block, int32_t block_size) {
     return primary_index;
 }
 
-int32_t bwt_reverse_transform_optimal(uint8_t *block, int32_t block_size, int64_t primary_index) {
+int32_t bwt_reverse_transform(uint8_t *block, int32_t block_size, int64_t primary_index, uint8_t *alphabet) {
     int64_t *temp = malloc((block_size + 1) * sizeof(int64_t));
     
     int32_t err = libsais64_unbwt(block, block, temp, block_size, NULL, primary_index);
 
     free(temp);
 
+    // Reverse apply alphabet if not NULL
+    if (alphabet != NULL) {
+        // Flip index/value
+        uint8_t alphabet_reverse[ALPHABET_SIZE];
+        for (int i = 0; i < ALPHABET_SIZE; i++) {
+            alphabet_reverse[alphabet[i]] = i;
+        }
+
+        for (int i = 0; i < block_size; i++) {
+            block[i] = alphabet_reverse[block[i]];
+        }
+    }
+
     return err;
 }
-int64_t bwt_transform(uint8_t *block, int32_t block_size) {
+int64_t bwt_transform_mine(uint8_t *block, int32_t block_size) {
     srand(time(NULL));
     /// Compute the BWT using radix sort on the first two characters, then
     /// quicksort on the rest. Burrows-Wheeler method for computation of SA.
