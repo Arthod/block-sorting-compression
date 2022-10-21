@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include "bwt.c"
 #include "compress.c"
+#include "suffix_tree.c"
 
 #define BLOCK_SIZE_MAX 2000000000//2000000000//500000000 * 4
                     // 2147483647
@@ -18,6 +20,20 @@ int runs_count(char *arr, int arr_length) {
     }
     
     return count;
+}
+
+void print_occurrences(uint8_t *block, uint64_t block_size) {
+    uint64_t *count = malloc(256 * sizeof(uint64_t)); 
+
+    for (int i = 0; i < block_size; i++) {
+        count[block[i]]++;
+    }
+
+    printf("[");
+    for (int i = 0; i < 256; i++) {
+        printf("%ld, ", count[i]);
+    }
+    printf("]\n");
 }
 
 int file_size(FILE *f) {
@@ -66,6 +82,9 @@ int main(int argc, char** argv) {
             block[j] = fgetc(f);
             block_saved[j] = block[j];
         }
+
+        // Print occurrences
+        print_occurrences(block, block_size);
 
         // Compute and print total number of runs before BWT
         runs = runs_count(block, block_size);
