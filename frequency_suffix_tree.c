@@ -5,12 +5,12 @@
 
 typedef struct Node {
     int frequency;
-    Arc *arcs;
+    struct Arc *arcs;
     short arcs_count;
 } Node;
 
 typedef struct Arc {
-    Node node;
+    struct Node node;
     short symbol;
 } Arc;
 
@@ -23,6 +23,9 @@ Node fst_create(short *block, long block_size, int depth) {
 
     // Iterate through block with block_size and depth size
     for (int i = 0; i < block_size; i++) {
+        if (i % 500000 == 0) {
+            printf("%d / %ld\n", i, block_size);
+        }
         Node *node_current = root;
 
         for (int j = 0; j < depth; j++) {

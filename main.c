@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
     printf("File size: %d, maximum block size: %d, number of blocks: %d\n", f_size, BLOCK_SIZE_MAX, blocks_count);
     for (int i = 0; i < blocks_count; i++) {
         int block_size = min(BLOCK_SIZE_MAX, f_size - BLOCK_SIZE_MAX * i);
-        uint8_t *block = malloc(block_size * sizeof(uint8_t));
+        uint16_t *block = malloc(block_size * sizeof(uint16_t));
         uint8_t *block_saved = malloc(block_size * sizeof(uint8_t));
         uint32_t runs;
 
@@ -84,8 +84,10 @@ int main(int argc, char** argv) {
         }
 
         // Print occurrences
-        print_occurrences(block, block_size);
+        //print_occurrences(block, block_size);
+        fst_create(block, block_size, 3);
 
+        /*
         // Compute and print total number of runs before BWT
         runs = runs_count(block, block_size);
         printf("Runs count before %d with average run length %f\n", runs, block_size / (float) runs);
@@ -109,7 +111,7 @@ int main(int argc, char** argv) {
                 printf("Error occured. BWT reverse and BWT input is not the same\n");
                 return -1;
             }
-        }
+        }*/
 
         free(block);
         free(block_saved);
