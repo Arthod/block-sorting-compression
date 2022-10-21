@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "bwt.c"
 #include "compress.c"
-#include "suffix_tree.c"
+#include "frequency_suffix_tree.c"
 
 #define BLOCK_SIZE_MAX 2000000000//2000000000//500000000 * 4
                     // 2147483647
