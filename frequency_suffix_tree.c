@@ -1,7 +1,8 @@
-#include <stdio.h>
-#include <math.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
-
+#include <string.h>
+#include <limits.h>
 
 typedef struct Node {
     int frequency;
@@ -14,7 +15,7 @@ typedef struct Arc {
     short symbol;
 } Arc;
 
-Node fst_create(short *block, long block_size, int depth) {
+Node fst_create(uint16_t *block, uint64_t block_size, int depth) {
     // Initialize root FST
     Node *root = malloc(sizeof(Node));
     root->frequency = 0;
@@ -22,7 +23,10 @@ Node fst_create(short *block, long block_size, int depth) {
     root->arcs_count = 0;
 
     // Iterate through block with block_size and depth size
-    for (int i = 0; i < block_size; i++) {
+    int current_largest_count = 0;
+    int *current_largest_substring = malloc(depth * sizeof(int));
+    int *current_substring = malloc(depth * sizeof(int));
+    for (uint64_t i = 0; i < block_size; i++) {
         if (i % 500000 == 0) {
             printf("%d / %ld\n", i, block_size);
         }
