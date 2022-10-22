@@ -86,8 +86,8 @@ int main(int argc, char** argv) {
 
         // Print occurrences
         //print_occurrences(block, block_size);
-        lzw_encode(block, block_size);
-        //fst_create(block, block_size, 3);
+        //lzw_encode(block, block_size);
+        fst_create(block, block_size, 3);
 
         /*
         // Compute and print total number of runs before BWT
