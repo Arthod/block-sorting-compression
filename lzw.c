@@ -88,16 +88,16 @@ void lzw_encode(uint16_t *block, uint64_t block_size) {
                 index_end++;
             } else {
                 if (index_end - index_start == 1) {
-                    printf("Output: %d\n", block[index_start]);
+                    printf("(%ld/%ld) Output: %d\n", i, block_size, block[index_start]);
                 } else {
-                    printf("Output: %ld\n", symbol_current2);
+                    printf("(%ld/%ld) Output: %ld\n", i, block_size, symbol_current2);
                 }
 
                 // Add to dictionary
-                Code *code_new = &dictionary[dictionary_size];
-                code_new->index_end = index_end;
-                code_new->index_start = index_start;
-                code_new->symbol_value = dictionary_size + 256; 
+                Code code_new = dictionary[dictionary_size];
+                code_new.index_end = index_end;
+                code_new.index_start = index_start;
+                code_new.symbol_value = dictionary_size + 256; 
                 
                 /*printf("Added new to dictionary symbol: '");
                 for (uint64_t k = 0; k <= index_end - index_start; k++) {
