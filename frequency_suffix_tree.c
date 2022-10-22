@@ -29,10 +29,8 @@ Node fst_create(uint16_t *block, uint64_t block_size, int depth) {
 
     // Iterate through block with block_size and depth size
     for (uint64_t i = 0; i < block_size; i++) {
-        if (i % 500000 == 0) {
-            printf("%ld / %ld\n", i, block_size);
-            printf("Root: %d\n", root->frequency);
-        }
+        //printf("Current char %c (%ld/%ld)\n", block[i], i, block_size);
+        printf("Returned to root\n");
         Node *node_current = root;
 
         for (int j = 0; j < depth; j++) {
@@ -40,26 +38,23 @@ Node fst_create(uint16_t *block, uint64_t block_size, int depth) {
 
             // Find the arc with the current symbol
             int arc_found = 0;
-            Arc arc;
+            Arc *arc;
             for (int k = 0; k < node_current->arcs_count; k++) {
-                arc = node_current->arcs[k];
+                arc = &node_current->arcs[k];
 
-                if (arc.symbol == block[i + j]) {
+                if (arc->symbol == block[i + j]) {
+                    // If we found the arc with the symbol, increment the next nodes frequency, add set it to node_current
                     arc_found = 1;
+                    node_current = &arc->node;
+                    arc->node.frequency++;
+                    printf("Existing arc with symbol %c, new frequency is: %d\n", block[i + j], node_current->frequency);
                     break;
                 }
             }
 
-            node_current->frequency++;
-
-            if (arc_found == 1) {
-                // If we found the arc with the symbol, increment the next nodes frequency, add set it to node_current
-                node_current = &arc.node;
-                node_current->frequency++;
-                //printf("Incremented frequency. Now: %d\n", node_current->frequency);
-                
-            } else {
+            if (arc_found == 0) {
                 // If no arc was found with symbol, add a new arc for that symbol with a new node
+                printf("Adding arc with symbol %c\n", block[i + j]);
 
                 // New node
                 Node *node_new = malloc(sizeof(Node));
@@ -121,8 +116,6 @@ Node fst_create(uint16_t *block, uint64_t block_size, int depth) {
             }
             printf("'.\n");
         }
-
-        node_current = root;
     }
 
     // Print longest substring with frequency
