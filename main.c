@@ -4,6 +4,7 @@
 #include "bwt.c"
 #include "compress.c"
 #include "frequency_suffix_tree.c"
+#include "lzw.c"
 
 #define BLOCK_SIZE_MAX 2000000000//2000000000//500000000 * 4
                     // 2147483647
@@ -85,7 +86,8 @@ int main(int argc, char** argv) {
 
         // Print occurrences
         //print_occurrences(block, block_size);
-        fst_create(block, block_size, 3);
+        lzw_encode(block, block_size);
+        //fst_create(block, block_size, 3);
 
         /*
         // Compute and print total number of runs before BWT

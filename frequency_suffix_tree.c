@@ -28,7 +28,7 @@ Node fst_create(uint16_t *block, uint64_t block_size, int depth) {
     int *current_substring = malloc(depth * sizeof(int));
     for (uint64_t i = 0; i < block_size; i++) {
         if (i % 500000 == 0) {
-            printf("%d / %ld\n", i, block_size);
+            printf("%ld / %ld\n", i, block_size);
         }
         Node *node_current = root;
 
