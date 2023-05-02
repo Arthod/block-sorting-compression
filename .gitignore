@@ -3,6 +3,8 @@ main
 *.out
 *.txt
 *.txt
+*.o
 enwik9
 enwik8
 enwik7
+enwik6

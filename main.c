@@ -5,15 +5,17 @@
 #include "compress.c"
 #include "frequency_suffix_tree.c"
 #include "lzw.c"
+#include "mtf.c"
+#include <stdint.h>
 
-#define BLOCK_SIZE_MAX 2000000000//2000000000//500000000 * 4
+#define BLOCK_SIZE_MAX 200000000//2000000000//500000000 * 4
                     // 2147483647
 
 #define min(a,b) (((a)<(b))?(a):(b))
 #define max(a,b) (((a)>(b))?(a):(b))
 
 
-int runs_count(char *arr, int arr_length) {
+int runs_count(uint8_t *arr, int arr_length) {
     int count = 0;
     for (int i = 1; i < arr_length; i++) {
         if (arr[i] != arr[i - 1])
@@ -72,10 +74,11 @@ int main(int argc, char** argv) {
     printf("File size: %d, maximum block size: %d, number of blocks: %d\n", f_size, BLOCK_SIZE_MAX, blocks_count);
     for (int i = 0; i < blocks_count; i++) {
         int block_size = min(BLOCK_SIZE_MAX, f_size - BLOCK_SIZE_MAX * i);
-        uint16_t *block = malloc(block_size * sizeof(uint16_t));
+        uint8_t *block = malloc(block_size * sizeof(uint8_t));
         uint8_t *block_saved = malloc(block_size * sizeof(uint8_t));
         uint32_t runs;
-
+        float run_length;
+        
         printf("Compressing block %d of %d with block_size: %d\n", i + 1, blocks_count, block_size);
 
         // Read file upto block size
@@ -87,24 +90,32 @@ int main(int argc, char** argv) {
         // Print occurrences
         //print_occurrences(block, block_size);
         //lzw_encode(block, block_size);
-        fst_create(block, block_size, 3);
+        //fst_create(block, block_size, 3);
 
-        /*
+        
         // Compute and print total number of runs before BWT
         runs = runs_count(block, block_size);
-        printf("Runs count before %d with average run length %f\n", runs, block_size / (float) runs);
+        run_length = block_size / (float) runs;
+        printf("Runs count before %d with average run length %f\n", runs, run_length);
         
         // Compute and print total number of runs after BWT
         int64_t bwt_primary_index = bwt_transform(block, block_size, alphabet);
         runs = runs_count(block, block_size);
-        printf("Runs count after %d with average run length %f\n", runs, block_size / (float) runs);
+        run_length = block_size / (float) runs;
+        printf("Runs count after %d with average run length %f\n", runs, run_length);
 
-        // Write BWT of string to out file and close file
+        // Move to front
+        mtf_encode(block, block_size);
+
+        // Write Out
         FILE *f_out = fopen("out.txt", "w");
         for (int j = 0; j < block_size; j++) {
             fprintf(f_out, "%c", block[j]);
         }
         fclose(f_out);
+
+        // Move to front decode
+        mtf_decode(block, block_size);
 
         // Reverse BWT and verify it is the same as input file
         bwt_reverse_transform(block, block_size, bwt_primary_index, alphabet);
@@ -113,7 +124,7 @@ int main(int argc, char** argv) {
                 printf("Error occured. BWT reverse and BWT input is not the same\n");
                 return -1;
             }
-        }*/
+        }
 
         free(block);
         free(block_saved);
