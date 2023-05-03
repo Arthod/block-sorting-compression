@@ -5,8 +5,7 @@
 #include "compress.c"
 #include "frequency_suffix_tree.c"
 #include "lzw.c"
-#include "mtf.c"
-#include "huffman.c"
+#include "mtfrle.c"
 #include <stdint.h>
 
 #define BLOCK_SIZE_MAX 2000000000//2000000000//500000000 * 4
@@ -105,58 +104,15 @@ int main(int argc, char** argv) {
         run_length = block_size / (float) runs;
         printf("Runs count after %d with average run length %f\n", runs, run_length);
 
-        // Put the uint8_t block into a uint16_t block for RLE step in MTF.
-        printf("Copying over from 8-bit array to 16-bit array.\n");
-        uint16_t *block_new = malloc(block_size * sizeof(uint16_t));
-        for (int j = 0; j < block_size; j++) {
-            block_new[j] = block[i];
-        }
-        free(block);
-
         // Move to front
         printf("MTF encoding.\n");
-        mtf_encode(block_new, block_size);
-
-        // Hufman encode to file
-        printf("Writing to file\n");
-        FILE *f_out = fopen("out.txt", "wb");
-        if (!f_out) {
-            fprintf(stderr, "Error opening output file.\n");
-            return 1;
-        }
-        huffman_encode(block_new, block_size, f_out);
-        fclose(f_out);
-        free(block_new);
-
-        // Huffman decode from file
-        printf("Writing to file\n");
-        FILE *f_in = fopen("out.txt", "rb");    
-        if (!f_in) {
-            fprintf(stderr, "Error opening input file.\n");
-            return 1;
-        }    
-        size_t block_new_size;
-        if (huffman_decode(f_in, &block_new, &block_new_size) != 0) {
-            fprintf(stderr, "Error decoding input file.\n");
-            fclose(f_in);
-            return 1;
-        }
-
+        uint16_t *arr_mtf_encoded = malloc(block_size * sizeof(uint16_t));
+        uint32_t arr_mtf_encoded_length = mtf_encode(block, block_size, arr_mtf_encoded);
+        printf("%d\n", arr_mtf_encoded_length);
 
         // Move to front decode
         printf("MTF decoding.\n");
-        uint16_t *output;
-        int32_t output_size;
-        mtf_decode(block_new, block_new_size, &output, &output_size);
-
-        
-        // Put the uint16_t block into a uint8_t block for the BWT step
-        printf("Copying over from 16-bit array to 8-bit array.\n");
-        block = malloc(block_size * sizeof(uint8_t));
-        for (int j = 0; j < block_size; j++) {
-            block[j] = block_new[i];
-        }
-        free(block_new);
+        mtf_decode(arr_mtf_encoded, arr_mtf_encoded_length);
 
         
         // Reverse BWT and verify it is the same as input file
@@ -168,6 +124,7 @@ int main(int argc, char** argv) {
             }
         }
 
+        free(arr_mtf_encoded);
         free(block);
         free(block_saved);
     }
