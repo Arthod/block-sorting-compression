@@ -8,17 +8,17 @@ Lempel Ziv Welch Algorithm
 #include <string.h>
 #include <limits.h>
 
-typedef struct Code {
+typedef struct LZWCode {
     uint64_t index_start;
     uint64_t index_end;
     uint64_t symbol_value;
-} Code;
+} LZWCode;
 
 void lzw_encode(uint16_t *block, uint64_t block_size) {
-    Code *dictionary = malloc(65536 * sizeof(Code));
+    LZWCode *dictionary = malloc(65536 * sizeof(LZWCode));
     uint64_t dictionary_size = 0;
     /*for (int i = 0; i < 256; i++) {
-        Code *code = malloc(sizeof(Code));
+        LZWCode *code = malloc(sizeof(LZWCode));
         code->index_start = NULL;
         code->index_end = NULL;
         dictionary[i] = *code;
@@ -32,7 +32,7 @@ void lzw_encode(uint16_t *block, uint64_t block_size) {
         uint64_t index_end = i + 1;
 
         /*// Check if two-characters interval is in dictionary, if not, add it
-        Code code = dictionary[block[i]];
+        LZWCode code = dictionary[block[i]];
         if (code.symbol_value != block[i]) {
             code.index_start = i;
             code.index_end = i;
@@ -46,7 +46,7 @@ void lzw_encode(uint16_t *block, uint64_t block_size) {
             uint64_t symbol_current1;
             uint64_t symbol_current2;
             for (uint64_t j = 0; j < dictionary_size; j++) {
-                Code code = dictionary[j];
+                LZWCode code = dictionary[j];
                 //printf("Looping through dictionary, j = %d\n", j);
 
                 // Check if have same length
@@ -94,7 +94,7 @@ void lzw_encode(uint16_t *block, uint64_t block_size) {
                 }
 
                 // Add to dictionary
-                Code code_new = dictionary[dictionary_size];
+                LZWCode code_new = dictionary[dictionary_size];
                 code_new.index_end = index_end;
                 code_new.index_start = index_start;
                 code_new.symbol_value = dictionary_size + 256; 

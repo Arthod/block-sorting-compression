@@ -73,7 +73,7 @@ void mtf_encode(uint16_t *arr, int32_t arr_length) {
     }
 }
 
-void mtf_decode(uint16_t *arr, int32_t arr_length) {
+void mtf_decode(uint16_t *arr, int32_t arr_length, uint16_t **output, int32_t *output_length) {
     int offset = 0;
     uint16_t dictionary[DICTIONARY_SIZE];
     for (int i = 0; i < DICTIONARY_SIZE; i++) {
@@ -82,17 +82,30 @@ void mtf_decode(uint16_t *arr, int32_t arr_length) {
 
     uint16_t c;
     int index;
+    
+    // Calculate the output size
+    *output_length = arr_length;
     for (int i = 0; i < arr_length; i++) {
-        printf("%d\n", i);
+        if ((arr[i] == runA || arr[i] == runB) && RLE) {
+            int k = 1;
+            while (i + k < arr_length && (arr[i + k] == runA || arr[i + k] == runB)) {
+                k++;
+            }
+            *output_length += k - 2;
+            i += k - 1;
+        }
+    }
+    
+    *output = (uint16_t *) malloc(*output_length * sizeof(uint16_t));
+    
+    for (int i = 0; i < arr_length; i++) {
         index = arr[i];
 
         if ((index == runA || index == runB) && RLE) {
-            printf("Here1\n");
             int s = 0;
             if (index == runB) {
                 s = 1;
             }
-            printf("Here2\n");
 
             int k = 1;
             while (i + k < arr_length && ((index = arr[i + k]) == runA || index == runB)) {
@@ -103,12 +116,58 @@ void mtf_decode(uint16_t *arr, int32_t arr_length) {
                 k++;
             }
 
-            printf("Here3\n");
-            for (int j = 0; j < s + 1; j++) {
+            for (int j = 0; j < s; j++) {
+                (*output)[i + offset] = dictionary[0];
+                offset++;
+            }
+            i += k - 1;
+        } else {
+            index = index - 1;
+
+            // Get value
+            c = dictionary[index];
+            (*output)[i + offset] = c;
+
+            // Move array forward
+            for (int j = index; j > 0; j--) {
+                dictionary[j] = dictionary[j - 1];
+            }
+            dictionary[0] = c;
+        }
+    }
+}
+
+void mtf_decode2(uint16_t *arr, int32_t arr_length) {
+    int offset = 0;
+    uint16_t dictionary[DICTIONARY_SIZE];
+    for (int i = 0; i < DICTIONARY_SIZE; i++) {
+        dictionary[i] = i;
+    }
+
+    uint16_t c;
+    int index;
+    for (int i = 0; i < arr_length; i++) {
+        index = arr[i];
+
+        if ((index == runA || index == runB) && RLE) {
+            int s = 0;
+            if (index == runB) {
+                s = 1;
+            }
+
+            int k = 1;
+            while (i + k < arr_length && ((index = arr[i + k]) == runA || index == runB)) {
+                s = s << 1;
+                if (index == runB) {
+                    s = s + 1;
+                }
+                k++;
+            }
+
+            for (int j = 0; j < s; j++) {
                 arr[i + offset] = dictionary[0];
                 offset++;
             }
-            printf("Here4\n");
             i += k - 1;
         } else {
             index = index - 1;

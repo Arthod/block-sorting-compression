@@ -4,20 +4,20 @@
 #include <string.h>
 #include <limits.h>
 
-typedef struct Node {
+typedef struct FSTNode {
     uint32_t frequency;
-    struct Arc *arcs;
+    struct FSTArc *arcs;
     uint16_t arcs_count;
-} Node;
+} FSTNode;
 
-typedef struct Arc {
-    struct Node node;
+typedef struct FSTArc {
+    struct FSTNode node;
     uint16_t symbol;
-} Arc;
+} FSTArc;
 
-Node fst_create(uint16_t *block, uint64_t block_size, int depth) {
+FSTNode fst_create(uint16_t *block, uint64_t block_size, int depth) {
     // Initialize root FST
-    Node *root = malloc(sizeof(Node));
+    FSTNode *root = malloc(sizeof(FSTNode));
     root->frequency = 0;
     root->arcs = NULL;
     root->arcs_count = 0;
@@ -31,14 +31,14 @@ Node fst_create(uint16_t *block, uint64_t block_size, int depth) {
     for (uint64_t i = 0; i < block_size; i++) {
         //printf("Current char %c (%ld/%ld)\n", block[i], i, block_size);
         printf("Returned to root\n");
-        Node *node_current = root;
+        FSTNode *node_current = root;
 
         for (int j = 0; j < depth; j++) {
             substring_current[j] = block[i + j];
 
             // Find the arc with the current symbol
             int arc_found = 0;
-            Arc *arc;
+            FSTArc *arc;
             for (int k = 0; k < node_current->arcs_count; k++) {
                 arc = &node_current->arcs[k];
 
@@ -57,13 +57,13 @@ Node fst_create(uint16_t *block, uint64_t block_size, int depth) {
                 printf("Adding arc with symbol %c\n", block[i + j]);
 
                 // New node
-                Node *node_new = malloc(sizeof(Node));
+                FSTNode *node_new = malloc(sizeof(FSTNode));
                 node_new->frequency = 1;
                 node_new->arcs = NULL;
                 node_new->arcs_count = 0;
 
                 // Init new arc
-                Arc *arc_new = malloc(sizeof(Arc));
+                FSTArc *arc_new = malloc(sizeof(FSTArc));
                 arc_new->symbol = block[i + j];
                 arc_new->node = *node_new;
 
@@ -71,12 +71,12 @@ Node fst_create(uint16_t *block, uint64_t block_size, int depth) {
                 if (node_current->arcs_count == 0) {
                     // Zero number of arcs
                     node_current->arcs_count = 1;
-                    node_current->arcs = malloc(sizeof(Arc));
+                    node_current->arcs = malloc(sizeof(FSTArc));
                     node_current->arcs[0] = *arc_new;
 
                 } else {
                     // Add new arc to the array of arcs (copy array)
-                    Arc *arcs_new = malloc((node_current->arcs_count + 1) * sizeof(Arc)); 
+                    FSTArc *arcs_new = malloc((node_current->arcs_count + 1) * sizeof(FSTArc)); 
                     for (int k = 0; k < node_current->arcs_count; k++) {
                         arcs_new[k] = node_current->arcs[k];
                     }

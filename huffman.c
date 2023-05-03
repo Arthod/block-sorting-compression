@@ -71,24 +71,20 @@ Node* buildHuffmanTree(const uint16_t* data, size_t dataSize) {
     for (size_t i = 0; i < dataSize; ++i) {
         freqs[data[i]]++;
     }
-    printf("qwe2\n");
 
     Node* heap[2 * NUM_SYMBOLS];
     memset(heap, 0, sizeof(Node*) * 2 * NUM_SYMBOLS); // Initialize the heap array with NULL pointers
     int heapSize = 0;
     for (uint16_t i = 0; i < NUM_SYMBOLS; ++i) {
         if (freqs[i] > 0) {
-            printf("qwe5\n");
             insertHeap(heap, &heapSize, newNode(i, freqs[i]));
         }
     }
-    printf("qwe3\n");
 
     if (heapSize == 1) {
         // Special case: only one unique symbol in the input data
         return heap[0];
     }
-    printf("qwe4\n");
 
     while (heapSize > 1) {
         Node* left = removeMin(heap, &heapSize);
@@ -98,7 +94,6 @@ Node* buildHuffmanTree(const uint16_t* data, size_t dataSize) {
         merged->right = right;
         insertHeap(heap, &heapSize, merged);
     }
-    printf("qwe5\n");
 
     return heap[0];
 }
@@ -255,6 +250,7 @@ int huffman_decode(FILE *inputFile, uint16_t **decodedData, size_t *decodedDataS
     return 0;
 }
 
+/*
 int main() {
     uint16_t data[] = {1, 3, 3, 5, 6, 7, 8, 8, 8, 9, 9};
     size_t dataSize = sizeof(data) / sizeof(data[0]);
@@ -302,3 +298,4 @@ int main() {
     printf("Huffman encoding and decoding successful!\n");
     return 0;
 }
+*/

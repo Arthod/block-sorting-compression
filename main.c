@@ -117,17 +117,37 @@ int main(int argc, char** argv) {
         printf("MTF encoding.\n");
         mtf_encode(block_new, block_size);
 
-        // Write Out
+        // Hufman encode to file
         printf("Writing to file\n");
-        FILE *f_out = fopen("out.txt", "w");
-        for (int j = 0; j < block_size; j++) {
-            fprintf(f_out, "%c", block_new[j]);
+        FILE *f_out = fopen("out.txt", "wb");
+        if (!f_out) {
+            fprintf(stderr, "Error opening output file.\n");
+            return 1;
         }
+        huffman_encode(block_new, block_size, f_out);
         fclose(f_out);
+        free(block_new);
+
+        // Huffman decode from file
+        printf("Writing to file\n");
+        FILE *f_in = fopen("out.txt", "rb");    
+        if (!f_in) {
+            fprintf(stderr, "Error opening input file.\n");
+            return 1;
+        }    
+        size_t block_new_size;
+        if (huffman_decode(f_in, &block_new, &block_new_size) != 0) {
+            fprintf(stderr, "Error decoding input file.\n");
+            fclose(f_in);
+            return 1;
+        }
+
 
         // Move to front decode
         printf("MTF decoding.\n");
-        mtf_decode(block_new, block_size);
+        uint16_t *output;
+        int32_t output_size;
+        mtf_decode(block_new, block_new_size, &output, &output_size);
 
         
         // Put the uint16_t block into a uint8_t block for the BWT step
