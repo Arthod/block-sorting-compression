@@ -37,25 +37,25 @@ uint32_t mtf_encode(uint8_t *arr_in, uint32_t arr_in_length, uint16_t *arr_out) 
             while (i + k < arr_in_length && c == arr_in[i + k]) {
                 k++;
             }
-            uint32_t k_other = k - 1;
-            printf("k = %d: ", k);
             
-            uint32_t bits_written = floor(log2(k + 1));
-            for (int j = 0; j < bits_written; j++) {
+            uint32_t bits_required = floor(log2(k + 1));
+            uint32_t k_other = k + 1 - (1 << bits_required);
+            //printf("k = %d, k2 = %d: ", k, kkk);
+            for (int j = 0; j < bits_required; j++) {
                 if ((k_other >> j) & 1) {
                     // Bit is 1
                     arr_out[i + j - offset] = runB;
-                    printf("%d", runB);
+                    //printf("%d", runB);
 
                 } else {
                     // Bit is 0
                     arr_out[i + j - offset] = runA;
-                    printf("%d", runA);
+                    //printf("%d", runA);
                 }
             }
-            printf("\n");
+            //printf("\n");
         
-            offset += k - bits_written;
+            offset += k - bits_required;
             i += k - 1;
             
         } else {
@@ -99,17 +99,17 @@ uint32_t mtf_decode(uint16_t *arr_in, uint32_t arr_in_length, uint8_t *arr_out) 
 
             int k = 1;
             while (i + k < arr_in_length && ((index = arr_in[i + k]) == runA || index == runB)) {
-                s = s << 1;
                 if (index == runB) {
-                    s = s + 1;
+                    s = s + (1 << k);
                 }
                 k++;
             }
+            s = s + (1 << k) - 1;
 
             for (int j = 0; j < s; j++) {
                 arr_out[i + offset + j] = dictionary[0];
             }
-            offset += s;
+            offset += s - k;
             i += k - 1;
         } else {
             index = index - 1;
@@ -126,5 +126,5 @@ uint32_t mtf_decode(uint16_t *arr_in, uint32_t arr_in_length, uint8_t *arr_out) 
         }
     }
 
-    return arr_in_length + offset;
+    return arr_in_length + offset - 1;
 }

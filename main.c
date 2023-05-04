@@ -25,7 +25,13 @@ int runs_count(uint8_t *arr, int arr_length) {
     return count;
 }
 
-void print_arr(uint16_t *block, uint64_t block_size) {
+void print_arr16(uint16_t *block, uint64_t block_size) {
+    for (int i = 0; i < block_size; i++) {
+        printf("%d, ", block[i]);
+    }
+    printf("\n");
+}
+void print_arr8(uint8_t *block, uint64_t block_size) {
     for (int i = 0; i < block_size; i++) {
         printf("%d, ", block[i]);
     }
@@ -106,10 +112,12 @@ int main(int argc, char** argv) {
         printf("Runs count before %d with average run length %f\n", runs, run_length);
         
         // Compute and print total number of runs after BWT
-        //int64_t bwt_primary_index = bwt_transform(block, block_size, alphabet);
+        int64_t bwt_primary_index = bwt_transform(block, block_size, alphabet);
         runs = runs_count(block, block_size);
         run_length = block_size / (float) runs;
         printf("Runs count after %d with average run length %f\n", runs, run_length);
+
+        print_arr8(block, block_size);
 
         // Move to front
         printf("MTF encoding.\n");
@@ -117,11 +125,13 @@ int main(int argc, char** argv) {
         uint32_t arr_mtf_encoded_length = mtf_encode(block, block_size, arr_mtf_encoded);
         printf("%d\n", arr_mtf_encoded_length);
 
-        print_arr(arr_mtf_encoded, arr_mtf_encoded_length);
+        print_arr16(arr_mtf_encoded, arr_mtf_encoded_length);
 
         // Move to front decode
         printf("MTF decoding.\n");
         int block_size2 = mtf_decode(arr_mtf_encoded, arr_mtf_encoded_length, block);
+
+        print_arr8(block, block_size2);
 
         // Check lengths
         if (block_size != block_size2) {
@@ -131,7 +141,7 @@ int main(int argc, char** argv) {
 
         // Reverse BWT and verify it is the same as input file
         printf("BWT reverse transform.\n");
-        //bwt_reverse_transform(block, block_size2, bwt_primary_index, alphabet);
+        bwt_reverse_transform(block, block_size2, bwt_primary_index, alphabet);
         for (int j = 0; j < block_size2; j++) {
             if (block_saved[j] != block[j]) {
                 printf("Error occured. BWT reverse and BWT input is not the same\n");
