@@ -67,7 +67,7 @@ int64_t bwt_transform(uint8_t *block, int32_t block_size, uint8_t *alphabet) {
     }
 
     int32_t fs = 0;
-    int64_t *temp = malloc((block_size - 1 + fs) * sizeof(int64_t));
+    int64_t *temp = malloc((block_size + fs) * sizeof(int64_t));
     int64_t primary_index = libsais64_bwt(block, block, temp, block_size, fs, NULL);
 
     free(temp);

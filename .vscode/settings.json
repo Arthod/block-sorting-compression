@@ -3,6 +3,7 @@
         "math.h": "c",
         "stdlib.h": "c",
         "stdio.h": "c",
-        "libsais64.h": "c"
+        "libsais64.h": "c",
+        "libsais.h": "c"
     }
 }
