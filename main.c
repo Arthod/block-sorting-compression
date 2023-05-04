@@ -117,21 +117,21 @@ int main(int argc, char** argv) {
         run_length = block_size / (float) runs;
         printf("Runs count after %d with average run length %f\n", runs, run_length);
 
-        print_arr8(block, block_size);
+        //print_arr8(block, block_size);
 
         // Move to front
-        printf("MTF encoding.\n");
+        printf("MTF and RLE encoding.\n");
         uint16_t *arr_mtf_encoded = malloc(block_size * sizeof(uint16_t));
         uint32_t arr_mtf_encoded_length = mtf_encode(block, block_size, arr_mtf_encoded);
         printf("%d\n", arr_mtf_encoded_length);
 
-        print_arr16(arr_mtf_encoded, arr_mtf_encoded_length);
+        //print_arr16(arr_mtf_encoded, arr_mtf_encoded_length);
 
         // Move to front decode
-        printf("MTF decoding.\n");
+        printf("MTF and RLE decoding.\n");
         int block_size2 = mtf_decode(arr_mtf_encoded, arr_mtf_encoded_length, block);
 
-        print_arr8(block, block_size2);
+        //print_arr8(block, block_size2);
 
         // Check lengths
         if (block_size != block_size2) {
