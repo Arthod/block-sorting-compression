@@ -4,11 +4,12 @@
 #include <stdbool.h>
 #include <math.h>
 
-#define DICTIONARY_SIZE 256
+#define DICTIONARY_SIZE 258
 #define RLE true
 
 static uint16_t runA = 0;
 static uint16_t runB = 1;
+static uint16_t EOFF = 257;
 
 uint32_t mtf_encode(uint8_t *arr_in, uint32_t arr_in_length, uint16_t *arr_out) {
     uint8_t dictionary[DICTIONARY_SIZE];
@@ -37,19 +38,22 @@ uint32_t mtf_encode(uint8_t *arr_in, uint32_t arr_in_length, uint16_t *arr_out) 
                 k++;
             }
             uint32_t k_other = k - 1;
-            printf("k = %d\n", k);
+            printf("k = %d: ", k);
             
             uint32_t bits_written = floor(log2(k + 1));
             for (int j = 0; j < bits_written; j++) {
                 if ((k_other >> j) & 1) {
                     // Bit is 1
                     arr_out[i + j - offset] = runB;
+                    printf("%d", runB);
 
                 } else {
                     // Bit is 0
                     arr_out[i + j - offset] = runA;
+                    printf("%d", runA);
                 }
             }
+            printf("\n");
         
             offset += k - bits_written;
             i += k - 1;
@@ -66,13 +70,19 @@ uint32_t mtf_encode(uint8_t *arr_in, uint32_t arr_in_length, uint16_t *arr_out) 
         }
     }
 
-    return arr_in_length - offset;
+    if (offset == 0) {
+        printf("ERROR.. Nothing was compressed.. can't add EOF");
+        return 0;
+    }
+    arr_out[arr_in_length - offset] = EOFF;
+
+    return arr_in_length - offset + 1;
 }
 
 uint32_t mtf_decode(uint16_t *arr_in, uint32_t arr_in_length, uint8_t *arr_out) {
     int offset = 0;
-    uint8_t dictionary[300];
-    for (int i = 0; i < 300; i++) {
+    uint8_t dictionary[DICTIONARY_SIZE];
+    for (int i = 0; i < DICTIONARY_SIZE; i++) {
         dictionary[i] = i;
     }
 

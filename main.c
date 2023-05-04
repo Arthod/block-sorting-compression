@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
 
         // Check lengths
         if (block_size != block_size2) {
-            printf("Not same length.\n");
+            printf("Not same length. OLD=%d vs NEW=%d\n", block_size, block_size2);
             return -1;
         }
 
